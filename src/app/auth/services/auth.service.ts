@@ -5,6 +5,10 @@ import { AuthResponse, Usuario } from '../interfaces/interfaces';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { GoogleAuthProvider } from '@angular/fire/auth';
+import { Router } from '@angular/router';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,7 +21,9 @@ export class AuthService {
     return { ...this._usuario };
   }
 
-  constructor( private http: HttpClient ) { }
+  constructor( private http: HttpClient,
+               private fireauth: AngularFireAuth,
+               private router: Router ) { }
 
   registro( name: string, email: string, password: string ){
 
@@ -78,6 +84,19 @@ export class AuthService {
         catchError( err => of(false))
       );
 
+  }
+
+  googleSignIn() {
+
+    return this.fireauth.signInWithPopup(new GoogleAuthProvider).then( resp => {
+
+      this.router.navigate(['/dashboard']);
+      localStorage.setItem('token', JSON.stringify(resp.user?.uid));
+
+
+    }, err => {
+       alert(err.message);
+    })
   }
 
   logout(){
